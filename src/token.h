@@ -8,6 +8,7 @@
 typedef enum {
     TOKEN_KIND_INTEGER = 0,
     TOKEN_KIND_DOUBLE_DOT,
+    TOKEN_KIND_DOT_P,
     TOKEN_KIND_COUNT,
 } token_kind_t;
 
@@ -52,11 +53,12 @@ token_t tokens_current(const tokens_t *tokens);
 #ifdef TOKEN_IMPLEMENTATION
 
 const char *token_kind_as_string(const token_t *token) {
-    static_assert(TOKEN_KIND_COUNT == 2, "[DEV] make sure you handle the new kind in token_kind_as_string");
+    static_assert(TOKEN_KIND_COUNT == 3, "[DEV] make sure you handle the new kind in token_kind_as_string");
 
     switch (token->kind) {
         case TOKEN_KIND_INTEGER:    return "Integer";
-        case TOKEN_KIND_DOUBLE_DOT: return "Double Dot (..)";
+        case TOKEN_KIND_DOUBLE_DOT: return "Double Dot\t(..)";
+        case TOKEN_KIND_DOT_P:      return "Dot P\t(.p)";
         default: return "[DEV] token_kind_as_string: unkown token kind";
     }
 }

@@ -72,7 +72,7 @@ size_t parser_try_parse_dyadic_from_tokens(tokens_t *tokens, ast_t *dyadic) {
 
     if (tokens->count < 1) return 0;
 
-    static_assert(TOKEN_KIND_COUNT == 2 , "[DEV] new token kinds may add new binary verbs");
+    static_assert(TOKEN_KIND_COUNT == 3 , "[DEV] new token kinds may add new dyadic verbs");
     if (tokens_current(tokens).kind != TOKEN_KIND_DOUBLE_DOT) return 0;
 
     token_t token = tokens_temp_shift(tokens);
@@ -82,8 +82,51 @@ size_t parser_try_parse_dyadic_from_tokens(tokens_t *tokens, ast_t *dyadic) {
     return 1;
 }
 
+size_t parser_try_parse_monadic_from_tokens(tokens_t *tokens, ast_t *monadic) {
+    if (tokens->count < 1) return 0;
+
+    static_assert(TOKEN_KIND_COUNT == 3 , "[DEV] new token kinds may add new monadic verbs");
+    if (tokens_current(tokens).kind != TOKEN_KIND_DOT_P) return 0;
+
+    // unary
+    token_t token = tokens_temp_shift(tokens);
+    monadic->kind = AST_KIND_PRINT; // Dot P in the monadic context is print
+    monadic->position = token.position;
+
+    // unary monadic
+
+    // TODO: create is_monadic(...)
+    if (tokens_current(tokens).kind != TOKEN_KIND_DOT_P) return 1; // we correctly parsed one monadic verb
+
+    ast_t *right = ast_new();
+    size_t right_diff = parser_try_parse_monadic_from_tokens(tokens, right);
+    if (right_diff == 0) {
+        free(right);
+        return 0;
+    }
+
+    monadic->value.monadic.right = right;
+
+    return 1 + right_diff;
+}
+
 size_t parser_try_parse_niladic_from_tokens(tokens_t *tokens, ast_t *niladic) {
-    // TODO: monadic niladic (if atom fails this can succeed)
+    // monadic niladic
+    ast_t monadic = {0};
+    size_t monadic_diff = parser_try_parse_monadic_from_tokens(tokens, &monadic);
+    if (monadic_diff > 0) {
+        ast_t *right = ast_new();
+        size_t right_diff = parser_try_parse_niladic_from_tokens(tokens, right);
+        if (right_diff > 0) {
+            monadic.value.monadic.right = right;
+            *niladic = monadic;
+            return monadic_diff + right_diff;
+        } else {
+            tokens_temp_unshift(tokens, monadic_diff);
+            free(right);
+            // keep exec, atom or niladic dyadic niladic may succeed
+        } 
+    }
 
     // atom
     ast_t *left = ast_new();
@@ -122,7 +165,7 @@ size_t parser_try_parse_niladic_from_tokens(tokens_t *tokens, ast_t *niladic) {
 size_t parser_try_parse_atom_from_tokens(tokens_t *tokens, ast_t *atom) {
     if (tokens->count < 1) return 0;
 
-    static_assert(TOKEN_KIND_COUNT == 2 , "[DEV] new token kinds may add new nouns");
+    static_assert(TOKEN_KIND_COUNT == 3 , "[DEV] new token kinds may add new nouns");
     if (tokens_current(tokens).kind != TOKEN_KIND_INTEGER) return 0;
 
     token_t token = tokens_temp_shift(tokens);

@@ -12,6 +12,7 @@ typedef struct {
 // lexer_primitives must be sorted by ngraph length
 const primitive_t lexer_primitives[] = {
     { SV_STATIC(".."), TOKEN_STATIC(TOKEN_KIND_DOUBLE_DOT) },
+    { SV_STATIC(".p"), TOKEN_STATIC(TOKEN_KIND_DOT_P) },
 };
 const size_t lexer_primitives_count = (sizeof(lexer_primitives) / sizeof(lexer_primitives[0]));
 

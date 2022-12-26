@@ -31,8 +31,8 @@ const char *shift_args(int *argc, char ***argv) {
     return result;
 }
 
-#define INFO1
-#define INFO2
+#undef INFO1
+#undef INFO2
 
 int main(int argc, char **argv) {
     const char *this_name = shift_args(&argc, &argv);
@@ -71,6 +71,7 @@ int main(int argc, char **argv) {
 #endif
     fprintf(stdout, "asts: %zu\n", asts.count);
     fprintf(stdout, "program global declarations: %zu\n", program.global_declarations.count);
+    fprintf(stdout, "program main body statements: %zu\n", program.main_body.count);
     fprintf(stdout, "--------------------------------\n");
 #endif
 
